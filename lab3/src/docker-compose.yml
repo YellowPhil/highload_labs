@@ -1,0 +1,29 @@
+services:
+  worker:
+    restart: 'unless-stopped'
+    build: ./worker
+    env_file:
+      - path: docker.env
+    networks:
+      - redisnet
+  server:
+    restart: 'unless-stopped'
+    build: ./server
+    env_file:
+      - path: docker.env
+    environment:
+      PORT: "8080"
+    ports:
+      - 8080:8080
+    networks:
+      - redisnet
+  redis:
+    restart: 'unless-stopped'
+    image: redis
+    expose: 
+      - 6379
+    networks:
+      - redisnet
+
+networks:
+  redisnet:
