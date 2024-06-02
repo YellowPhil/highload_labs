@@ -52,5 +52,10 @@ func main() {
         AddHashToBrute(hashRequest.Hash)
         return nil
     })
+    app.Get("/queue_len", func(ctx fiber.Ctx) error {
+        value := redisClient.LLen(context.Background(), hashKey).Val()
+        _, err := ctx.WriteString(fmt.Sprintf("%v", value))
+        return err
+    })
     app.Listen(":8080")
 }

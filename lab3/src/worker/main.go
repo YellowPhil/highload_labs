@@ -12,6 +12,7 @@ import (
 )
 
 const hashKey = "hash"
+const workers = 16
 
 var ctx = context.Background()
 var redisClient *redis.Client
@@ -41,7 +42,7 @@ func main() {
     GenerateClient()
 
     wp := bruter.NewWorkerPool[string, bruter.BruteforceResult](
-        16, time.Minute * 3, 
+        workers, time.Minute * 3, 
         worker, bruter.IsError,)
     wp.Start(
         func (input string) { log.Printf("[-] Unable to recover password for hash: %v\n", input)},
