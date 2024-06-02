@@ -1,0 +1,64 @@
+services:
+  worker:
+    restart: 'unless-stopped'
+    build: ./src/worker
+    env_file:
+      - path: docker.env
+    labels:
+      logging: "promtail"
+      logging_jobname: "container_logs"
+    depends_on:
+      - redis
+  server:
+    restart: 'unless-stopped'
+    build: ./src/server
+    env_file:
+      - path: docker.env
+    environment:
+      PORT: "8080"
+    ports:
+      - 8080:8080
+    labels:
+      logging: "promtail"
+      logging_jobname: "container_logs"
+    depends_on:
+      - redis
+  redis:
+    restart: 'unless-stopped'
+    hostname: redis
+    image: redis
+    expose: 
+      - 6379
+
+  loki:
+    hostname: loki
+    image: grafana/loki
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./configs/loki.yml:/etc/loki/loki-config.yaml
+  promtail:
+    hostname: promtail
+    image: grafana/promtail
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    volumes:
+      - ./configs/promtail.yml:/etc/promtail/promtail-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+
+  grafana:
+    hostname: grafana
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - promtail
