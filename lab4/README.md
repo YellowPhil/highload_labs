@@ -63,6 +63,7 @@ func init() {
 
 Подключив к графане Prometheus получим возможность смотреть логи с node-exporter
 ![](./assets/prom_connect.png)
+![](./assets/prom_logs.png)
 
 
 ### Заключение
